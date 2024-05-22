@@ -8,17 +8,28 @@ import meshtastic.tcp_interface
 parser = argparse.ArgumentParser(prog='MeshtasticMsg', add_help=True)
 parser.add_argument('message', nargs='?',default='hello mesh', help='Message to send to the meshtastic channel if none Default=hello mesh')
 parser.add_argument('channel', nargs='?',default='0', help='Channel to send message to, if none Default=0')
-#args = parser.parse_args()
+parser.add_argument('interface', nargs='?',default='tcp', help='interface to use, either tcp or serial, if none Default=tcp')
+parser.add_argument('hostname', nargs='?',default='meshtastic.local', help='hostname if using tcp, if none Default=meshtastic.local')
 args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
 xchannel = int(args.channel)
 
-# By default will try to find a meshtastic device,
-radio_hostname = "meshtastic.local" #Can also be an IP
-interface = meshtastic.tcp_interface.TCPInterface(radio_hostname)
-#interface = meshtastic.serial_interface.SerialInterface()
-# interface = meshtastic.serial_interface.SerialInterface(devPath='/dev/cu.usbmodem53230050571')
+#interface handling and or checking
+if args.interface == "tcp":
+        radio_hostname = args.hostname
+        interface = meshtastic.tcp_interface.TCPInterface(radio_hostname)
+else:
+        if args.interface == "serial":
+                interface = meshtastic.serial_interface.SerialInterface()
+        else:
+                print("interface argument " + str(args.interface) + " is not valid, choices are tcp or serial. Use argument --help for more information")
+                sys.exit(0)
 
-#channelIndex should correspond to the message channel to use
+
+
+#If needed you can specify the serial device path.  I'll probably add this as an option in future revisions. -blk 22May2024
+#interface = meshtastic.serial_interface.SerialInterface(devPath='/dev/cu.usbmodem53230050571')
+
+#send message to interface channelIndex corresponds to the numbered channel on the device.
 print("sending " + (args.message) + " to channel " +(args.channel))
 interface.sendText(args.message,channelIndex = xchannel)
 
